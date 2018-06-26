@@ -3,7 +3,6 @@ author: "Bojan Zivanovic"
 date: 2014-04-25
 title: Storing hierarchical data - Materialized Path
 slug: "storing-hierarchical-data-materialized-path"
-weight: 10
 ---
 
 Web applications often need a way to represent and store hierarchies.  
