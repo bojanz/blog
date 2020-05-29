@@ -146,6 +146,22 @@ I am not a big fan of this approach. It requires using a pointer to options (whi
 that the options can change underneath us). The caller still has to pass nil, and 
 on second read guess what the nil means.
 
+One way to get around passing nil is to define a default options struct, like [alexedwards/argon2id](https://github.com/alexedwards/argon2id) does:
+```c
+var DefaultParams = &Params{
+	Memory:      64 * 1024,
+	Iterations:  1,
+	Parallelism: 2,
+	SaltLength:  16,
+	KeyLength:   32,
+}
+```
+
+Then, require it to be passed by the caller, just like bcrypt does:
+```c
+hash, err := argon2id.CreateHash("pa$$word", argon2id.DefaultParams)
+```
+
 ### Structs with options
 
 Once there is a need to put options on a struct, why not attach the function itself to
