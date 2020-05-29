@@ -25,7 +25,7 @@ theme = "hugo-hikari-theme"
 [params.offcanvas]
 	# Menu items
 	title = "Bojan Živanović"
-	bio = "Drupal contributor.<br> [Drupal Commerce](https://drupalcommerce.org) Development Lead."
+	bio = "Open Sourcerer. eCommerce nerd. Advisor @[Centarro](https://centarro.io)"
 	subscribe = "Subscribe"
 	followme = "Follow me on"
 
