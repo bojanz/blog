@@ -67,7 +67,7 @@ amount, _ := currency.NewAmount("20.99", "USD")
 taxAmount, _ := amount.Mul("0.20")
 // Methods use apd.NewFromString(n) to get a decimal.
 ```
-This will also serve us well if we decide to switch the underlying decimal implementation, for example to https://github.com/ericlagergren/decimal which is faster but has seen [instability](https://github.com/ericlagergren/decimal/issues/154) due to slower maintanance this year.
+This will also serve us well if we decide to switch the underlying decimal implementation, for example to [ericlagergren/decimal](https://github.com/ericlagergren/decimal) which is faster but has seen [instability](https://github.com/ericlagergren/decimal/issues/154) due to slower maintanance this year.
 
 ### Where do currencies come from?
 
