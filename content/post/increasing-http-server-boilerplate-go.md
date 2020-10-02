@@ -209,7 +209,7 @@ wg.Wait()
 ```
 There's only one detail missing now: error handling.
 If one of the servers errors out (couldn't bind to addr or load the certificate) 
-we want to make sure the other one is imediately stopped, and execution stops.
+we want to make sure the other one is immediately stopped, and execution stops.
 
 Ideally we'd get the error from *wg.Wait*, but it doesn't support that.
 The answer lies in [x/sync/errgroup](https://pkg.go.dev/golang.org/x/sync/errgroup), which builds upon WaitGroup and does just that, in only 60 lines of code.
