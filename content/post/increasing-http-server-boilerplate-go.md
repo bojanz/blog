@@ -81,7 +81,7 @@ Let's assume that *addr* defaults to a TCP address such as ":8080", but can also
 be set to a systemd socket name such as "systemd:myapp-http", preferably through an
 environment variable which can be defined in our unit file.
 
-With a little help from [coreos/go-systemd](github.com/coreos/go-systemd), a helper is born:
+With a little help from [coreos/go-systemd](https://github.com/coreos/go-systemd), a helper is born:
 ```c
 func Listen(addr string) (net.Listener, error) {
 	var ln net.Listener
