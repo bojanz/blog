@@ -11,7 +11,7 @@ At a glance the API is simple:
 ```c
 http.ListenAndServe(":8080", h)
 ```
-where *h* is usually a third party router such as [Chi](https://github.com/go-chi/chi). But as always, the devil is in the details.
+where *h* is http.ServeMux or a third party router such as [Chi](https://github.com/go-chi/chi). But as always, the devil is in the details.
 Handling these details will require some boilerplate, so let's start writing it.
 
 ### Production-ready configuration (timeouts, TLS)
