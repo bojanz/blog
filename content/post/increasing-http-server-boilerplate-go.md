@@ -307,6 +307,57 @@ go func() {
 err := g.Wait() 
 ```
 
+### Graceful shutdown
+
+We have talked about how to start the servers, but not how to shut them down.
+When a shutdown signal is received (SIGINT or SIGTERM), we want to shut down the servers in the opposite order from
+which we started them, first the redirect server then the main server. This will allow any in progress requests
+to complete:
+
+```c
+redirectTimeout := 1 * time.Second
+ctx, cancel := context.WithTimeout(context.Background(), redirectTimeout)
+defer cancel()
+if err := redirectServer.Shutdown(ctx); err == context.DeadlineExceeded {
+	return fmt.Errorf("%v timeout exceeded while waiting on HTTP shutdown", redirectTimeout)
+}
+mainTimeout := 5 * time.Second
+ctx, cancel := context.WithTimeout(context.Background(), mainTimeout)
+defer cancel()
+if err := mainServer.Shutdown(ctx); err == context.DeadlineExceeded {
+	return fmt.Errorf("%v timeout exceeded while waiting on HTTPS shutdown", mainTimeout)
+}
+```
+
+It is tempting to make each Server responsible for catching the shutdown signal and shutting down automatically, but that would make it impossible to control the shutdown order. So, no new helpers here.
+Instead, I like to create an Application struct, with its own Start() and Shutdown() methods containing the code shown here. In addition to starting and shutting down servers, these methods can also handle app-specific workers such as queue processors.
+
+The main package is then the one responsible for tying it all together:
+```c
+	// Initialize dependencies, pass them to the Application.
+	logger := NewLogger()
+	app := myapp.New(logger)
+
+	// Wait for shut down in a separate goroutine.
+	errCh := make(chan error)
+	go func() {
+		shutdownCh := make(chan os.Signal)
+		signal.Notify(shutdownCh, os.Interrupt, syscall.SIGTERM)
+		<-shutdownCh
+
+		errCh <- app.Shutdown()
+	}()
+
+	// Start the server and handle any errors.
+	if err := app.Start(); err != nil {
+		logger.Fatal().Msg(err.Error())
+	}
+	// Handle shutdown errors.
+	if err := <-errCh; err != nil {
+		logger.Warn().Msg(err.Error())
+	}
+```
+
 ### Conclusion
 A simple microservice deployed to a known place can keep its code simple. A larger
 and more generic app needs more boilerplate. Luckily, it's a problem that is easy to solve.
