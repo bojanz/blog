@@ -75,7 +75,6 @@ file via *go generate*. We're now always one command away from latest data.
 To reduce data size, this package only includes country names in English. 
 Translated country names can be fetched on the frontend via [Intl.DisplayNames](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DisplayNames). 
 Alternatively, one can plug in [x/text/language/display](https://pkg.go.dev/golang.org/x/text/language/display) by setting a custom CountryMapper on the formatter. 
-More on that later.
 
 ## Address formats
 
@@ -115,12 +114,12 @@ the backend, maintaining a single source of truth. When the dataset is large, a 
 a single country's address format, and a new request must be made each time the country changes. This is how
 most widgets relying on Google's address data work, and it's something I wanted to change.
 
-We provide an [address.FormatHandler](https://github.com/bojanz/address/blob/master/http.go#L12) which can be used with any router:
+The package provides a [handler](https://github.com/bojanz/address/blob/master/http.go#L12) which can be used with any router:
 ```c
 r.Get("/address-formats", address.FormatHandler)
 ```
 It filters data by the provided locale (query string or header) to reduce the response size by another 20%.
-For example, if the locale is "fr", there is no need to return non-latin region names. The result? 
+For example, if the locale is "fr", there is no need to return non-Latin region names. The result?
 A response size of \~45kb, or **\~14kb** if gzip compression is used.
 
 And that right there is this package's entire raison d'etre. Making the entire dataset small enough
