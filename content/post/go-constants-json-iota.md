@@ -13,7 +13,7 @@ A Region field might be labelled "State" or "Province", among other options.
 
 We store country-specific addressing rules in an address.Format struct, which tells us the labels to use.
 Here's a simplified example:
-```
+```go
 type Format struct {
   Layout            string          `json:"layout,omitempty"`
   SublocalityType   SublocalityType `json:"sublocality_type,omitempty"`
@@ -31,7 +31,7 @@ This is a classic enum use case, implemented in Go via sets of constants.
 I usually define constants at the top of the file which uses them, but since there's
 around 30 possible constants here, I will create a [const.go](https://github.com/bojanz/address/blob/master/const.go) file and define them there.
 Here are 2 of the 4 types defined:
-```c
+```go
 type LocalityType uint8
 
 const (
@@ -59,7 +59,7 @@ We use a uint8 for minimal memory usage, each value is only 1 byte. The iota
 keyword allows us to assign a numeric value to each constant, starting from 0, without having
 to type out the numbers ourselves. All this has another great benefit: the zero value is
 useful, allowing us to leave out default values:
-```c
+```go
 var formats = map[string]Format{
 	Layout: "%1\n%2\n%3\n%P %L",
 	// We can delete the next lines, they match default/zero values.
@@ -83,7 +83,7 @@ to JSON, XML, and other formats.
 
 We start by defining a fixed-size array which holds a name for each numeric value:
 
-```c
+```go
 type LocalityType uint8
 
 const (
@@ -98,7 +98,7 @@ var localityTypeNames = [...]string{"city", "district", "post_town", "suburb"}
 
 An array saves us a bit of memory compared to a slice. Note the "[...]" trick to avoid specifying a count. 
 Now let's use it:
-```c
+```go
 func (l LocalityType) String() string {
 	if int(l) >= len(localityTypeNames) {
 		return ""

@@ -24,7 +24,7 @@ Additional functions are defined which wrap the original function (possibly inte
 and provide defaults for one or more parameters. When possible, this results in a clearer API. 
 
 A good example can be seen in the [strings](https://golang.org/pkg/strings/) package:
-```c
+```go
 // Replace returns a copy of the string s with the first n
 // non-overlapping instances of old replaced by new.
 // If n < 0, there is no limit on the number of replacements.
@@ -39,7 +39,7 @@ func ReplaceAll(s, old, new string) string {
 Callers can use strings.ReplaceAll() for the default use case, matching how the PHP and Python string replace functions work. For other use cases (e.g. replacing only the first occurence) there's strings.Replace() with the additional parameter.
 
 However, sometimes a natural name for a wrapper isn't obvious. Imagine a password.Hash function with an optional cost parameter:
-```
+```go
 func Hash(password []byte, cost int) ([]byte, error)
 ```
 How do we name the wrapper? HashDefault() doesn't sound friendly. We could flip the names, have Hash(password []byte) and a HashWithCost(password []byte, cost int), but that doesn't feel great either.
@@ -47,31 +47,31 @@ How do we name the wrapper? HashDefault() doesn't sound friendly. We could flip 
 ### Constants
 
 The Hash() example isn't hypothetical, I took it from [x/crypto/bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt):
-```c
+```go
 func GenerateFromPassword(password []byte, cost int) ([]byte, error)
 ```
 
 The bcrypt package solves this by introducing a constant for the default cost:
-```c
+```go
 const DefaultCost int = 10
 ```
 
 Thus, most callers use bcrypt like this:
-```c
+```go
 hash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 ```
 The caller doesn't need to know what the default cost is. But it also can't ignore the existence of cost as a concept. This makes usage of this function more explicit, but creates potentially too much verbosity if there are multiple optional parameters.
 
 Imagine an xmath.Round() function which allows you to specify the number of fraction digits (precision) and rounding mode:
-```c
+```go
 func Round(n float64, digits uint8, mode RoundingMode) float64
 ```
 It is common for such a function to default to 0 digits, and to round up. With two constants, the call becomes:
-```c
+```go
 n = math.Round(n, xmath.DefaultDigits, xmath.RoundHalfUp)
 ```
 That's becoming a mouthful. A possible solution would be to combine wrapper functions and constants, introducing a function per rounding mode:
-```c
+```go
 n = xmath.RoundHalfUp(n, xmath.DefaultDigits)
 n = xmath.RoundHalfDown(n, xmath.DefaultDigits)
 // RoundUp(), RoundDown(), RoundHalfEven(), RoundHalfOdd()...
@@ -79,7 +79,7 @@ n = xmath.RoundHalfDown(n, xmath.DefaultDigits)
 This increases the surface area of the API. Instead of a single Round() function we now have half a dozen. To guide the caller we could have a Round() which passes through to RoundHalfUp(). However, godoc is alphabetical, so it will show Round() in the middle of the real rounding functions, making their relationship non-obvious.
 
 My [bojanz/currency](https://github.com/bojanz/currency) package went for a simpler wrapper:
-```c
+```go
 // Round is a shortcut for RoundTo(currency.DefaultDigits, currency.RoundHalfUp).
 func (a Amount) Round() Amount {
 	return a.RoundTo(DefaultDigits, RoundHalfUp)
@@ -98,7 +98,7 @@ _One mitigating factor for the lack of default arguments is that Go has easy-to-
 - Rob Pike
 
 For functions with a single optional parameter, this is as close as Go gets to true optional parameters:
-```c
+```go
 // Can be called as Round(x) or Round(x, xmath.RoundHalfUp)
 func Round(x float64, modes ...RoundingMode) float64 {
 	mode := RoundHalfUp
@@ -119,7 +119,7 @@ This makes the parameters both position-independent and optional, but results in
 Optional parameters can be put on its own struct, which is then passed to the function. A nil struct can then be used to signal that defaults should be used.
 
 Let's look at the [jpeg](https://golang.org/pkg/image/jpeg/) package:
-```c
+```go
 // Options are the encoding parameters.
 // Quality ranges from 1 to 100 inclusive, higher is better.
 type Options struct {
@@ -132,12 +132,12 @@ func Encode(w io.Writer, m image.Image, o *Options) error {}
 ```
 
 The caller can then pass options:
-```c
+```go
 var buf bytes.Buffer
 jpeg.Encode(&buf, m0, &jpeg.Options{Quality: 75})
 ```
 or not:
-```c
+```go
 var buf bytes.Buffer
 jpeg.Encode(&buf, m0, nil)
 ```
@@ -147,7 +147,7 @@ that the options can change underneath us). The caller still has to pass nil, an
 on second read guess what the nil means.
 
 One way to get around passing nil is to define a default options struct, like [alexedwards/argon2id](https://github.com/alexedwards/argon2id) does:
-```c
+```go
 var DefaultParams = &Params{
 	Memory:      64 * 1024,
 	Iterations:  1,
@@ -158,7 +158,7 @@ var DefaultParams = &Params{
 ```
 
 Then, require it to be passed by the caller, just like bcrypt does:
-```c
+```go
 hash, err := argon2id.CreateHash("pa$$word", argon2id.DefaultParams)
 ```
 
@@ -166,7 +166,7 @@ hash, err := argon2id.CreateHash("pa$$word", argon2id.DefaultParams)
 
 Once there is a need to put options on a struct, why not attach the function itself to
 that struct? The jpeg.Encode() function can become a jpeg.Encoder struct:
-```c
+```go
 type Encoder struct {
 	Quality int
 }
@@ -181,7 +181,7 @@ func (e *Encoder) Encode(w io.Writer, m image.Image) error {}
 ```
 
 The default option can be modified after initializing the struct:
-```c
+```go
 var buf bytes.Buffer
 encoder := jpeg.NewEncoder()
 encoder.Quality = 90

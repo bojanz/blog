@@ -30,7 +30,7 @@ one more time, re-evaluting old tradeoffs. Let me show you [bojanz/address](http
 
 Let's start by defining a struct to hold our data.
 
-```c
+```go
 type Address struct {
 	Line1 string
 	Line2 string
@@ -115,7 +115,7 @@ a single country's address format, and a new request must be made each time the 
 most widgets relying on Google's address data work, and it's something I wanted to change.
 
 The package provides a [handler](https://github.com/bojanz/address/blob/master/http.go#L12) which can be used with any router:
-```c
+```go
 r.Get("/address-formats", address.FormatHandler)
 ```
 It filters data by the provided locale (query string or header) to reduce the response size by another 20%.
@@ -132,7 +132,7 @@ an address as HTML, using the country's address format.
 
 The country name can be omitted, for the use case where all addresses belong to the same country. 
 
-```c
+```go
 addr := address.Address{
     Line1:       "1098 Alta Ave",
     Locality:    "Mountain View",

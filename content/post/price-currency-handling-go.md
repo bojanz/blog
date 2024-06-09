@@ -14,7 +14,7 @@ ecosystem was missing a complete solution.
 
 Let's sketch out our requirements.
 
-```c
+```go
 type Amount struct {
 	number       decimal
 	currencyCode string
@@ -48,7 +48,7 @@ making it harder to order by amount in the database.
 
 Luckily, Go has two solid packages that implement decimals in userspace. The first one is [cockroachdb/apd](https://github.com/cockroachdb/apd).
 It is well maintained and fast enough, solving our need. The API is not very friendly:
-```c
+```go
 // a + b = c
 c := apd.New(0, 0)
 ctx := apd.BaseContext.WithPrecision(16)
@@ -62,7 +62,7 @@ ctx.Quantize(result, d, -2)
 ```
 However, since we have our own methods for arithmetic and comparisons, we can wrap the apd logic, never even exposing
 the underlying implementation to the user. We accept strings, and use them to instantiate the underlying type:
-```
+```go
 amount, _ := currency.NewAmount("20.99", "USD")
 taxAmount, _ := amount.Mul("0.20")
 // Methods use apd.NewFromString(n) to get a decimal.
@@ -91,7 +91,7 @@ The third trick is to deduplicate locales by parent, relying on the package perf
 If "fr-FR" and "fr" have the same data, "fr-FR" is removed, and the package selects "fr" instead.
 
 Finaly, symbols are grouped, to reduce repetition:
-```c
+```go
 "CAD": {
 	{"CA$", []string{"en"}},
 	{"$", []string{"en-CA", "fr-CA"}},
@@ -110,7 +110,7 @@ The formatter is about 200 lines of code long and respects locale-specific symbo
 separators, group sizes, numbering systems, etc. It has the full [set of options](https://github.com/bojanz/currency/blob/master/formatter.go#L40) offered by NumberFormatter APIs in
 programming languages such as PHP, Java, Swift, etc.
 
-```c
+```go
 locale := currency.NewLocale("tr")
 formatter := currency.NewFormatter(locale)
 amount, _ := currency.NewAmount("1245.988", "EUR")

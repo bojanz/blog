@@ -8,7 +8,7 @@ slug: "increasing-http-server-boilerplate-go"
 One great feature of Go is the built-in http.Server. It allows each app to serve HTTP and HTTPS traffic without having to put a reverse proxy such as Nginx in front of it.
 
 At a glance the API is simple:
-```c
+```go
 http.ListenAndServe(":8080", h)
 ```
 where *h* is http.ServeMux or a third party router such as [Chi](https://github.com/go-chi/chi). But as always, the devil is in the details.
@@ -17,7 +17,7 @@ Handling these details will require some boilerplate, so let's start writing it.
 ### Production-ready configuration (timeouts, TLS)
 
 [ListenAndServe](https://golang.org/src/net/http/server.go?s=97511:97566#L3108) creates an http.Server and uses it to listen on the given address and serve the given handler:
-```c
+```go
 func ListenAndServe(addr string, handler Handler) error {
 	server := &Server{Addr: addr, Handler: handler}
 	return server.ListenAndServe()
@@ -54,7 +54,7 @@ func NewServer(addr string, handler http.Handler) *http.Server {
 ```
 
 Usage stays similar:
-```c
+```go
 server := NewServer(":8080", r)
 server.ListenAndServe()
 ```
@@ -82,7 +82,7 @@ be set to a systemd socket name such as "systemd:myapp-http", preferably through
 environment variable which can be defined in our unit file.
 
 With a little help from [coreos/go-systemd](https://github.com/coreos/go-systemd), a helper is born:
-```c
+```go
 func Listen(addr string) (net.Listener, error) {
 	var ln net.Listener
 	if strings.HasPrefix(addr, "systemd:") {
@@ -106,7 +106,7 @@ func Listen(addr string) (net.Listener, error) {
 ```
 
 Usage now looks like this:
-```c
+```go
 addr := os.GetEnv("LISTEN")
 if addr == "" {
 	addr = ":8080"
@@ -121,7 +121,7 @@ server.Serve(ln)
 
 Having to pass *addr* twice and call *Listen()* ourselves is a bit tedious.
 Let's define our own Server struct which embeds *\*http.Server*, and move the listener logic there:
-```c
+```go
 package httpx
 
 type Server struct {
@@ -152,7 +152,7 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 ```
 
 Usage is now simple again:
-```c
+```go
 addr := os.GetEnv("LISTEN")
 if addr == "" {
 	addr = ":8080"
@@ -171,7 +171,7 @@ able to visit our URL via the browser without supplying the HTTPS port. The job 
 users to the HTTPS resource.
 
 That redirect logic looks like this:
-```c
+```go
 type httpRedirectHandler struct{}
 
 func (h httpRedirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +190,7 @@ func (h httpRedirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 Each *Serve* call is blocking, so the two servers must run in their own goroutines.
 Both goroutines need to complete, and the idiomatic way to do that is using a [WaitGroup](https://golang.org/pkg/sync/#WaitGroup):
-```c
+```go
 mainServer := NewServer(":443", r)
 redirectServer := NewServer(":80", httpRedirectHandler{})
 
@@ -215,7 +215,7 @@ Ideally we'd get the error from *wg.Wait*, but it doesn't support that.
 The answer lies in [x/sync/errgroup](https://pkg.go.dev/golang.org/x/sync/errgroup), which builds upon WaitGroup and does just that, in only 60 lines of code.
 
 Here's our code with error handling:
-```c
+```go
 mainServer := NewServer(":443", r)
 redirectServer := NewServer(":80", httpRedirectHandler{})
 
@@ -250,7 +250,7 @@ when starting the server and not when initializing it. I would prefer having one
 the server regardless of whether it uses TLS or not.
 
 Let's add a few more helpers to httpx:
-```c
+```go
 func NewServerTLS(addr string, cert tls.Certificate, handler http.Handler) *Server {
 	srv := NewServer(addr, handler)
 	srv.TLSConfig.Certificates = []tls.Certificate{cert}
@@ -275,7 +275,7 @@ func (srv *Server) Start() error {
 ```
 
 Our final implementation now looks like this:
-```c
+```go
 cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 if err != nil {
 	// Log the error and stop here.
@@ -314,7 +314,7 @@ When a shutdown signal is received (SIGINT or SIGTERM), we want to shut down the
 which we started them, first the redirect server then the main server. This will allow any in progress requests
 to complete:
 
-```c
+```go
 redirectTimeout := 1 * time.Second
 ctx, cancel := context.WithTimeout(context.Background(), redirectTimeout)
 defer cancel()
@@ -333,7 +333,7 @@ It is tempting to make each Server responsible for catching the shutdown signal 
 Instead, I like to create an Application struct, with its own Start() and Shutdown() methods containing the code shown here. In addition to starting and shutting down servers, these methods can also handle app-specific workers such as queue processors.
 
 The main package is then the one responsible for tying it all together:
-```c
+```go
 	// Initialize dependencies, pass them to the Application.
 	logger := NewLogger()
 	app := myapp.New(logger)
