@@ -34,8 +34,12 @@ theme = "hugo-hikari-theme"
 	search = "Search"
 
 	[[params.offcanvas.socialnetworks]]
+		name = "GitHub"
+		url = "https://github.com/bojanz"
+
+	[[params.offcanvas.socialnetworks]]
 		name = "Twitter"
-		url = "//twitter.com/bojan_zivanovic"
+		url = "https://twitter.com/bojan_zivanovic"
 
 [markup]
   [markup.highlight]
