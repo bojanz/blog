@@ -2,7 +2,6 @@ baseurl = "https://bojanz.github.io/"
 languageCode = "en-us"
 title = "bojanz.github.io"
 disqusShortname = "bojanz"
-googleAnalytics = "UA-16577454-2"
 theme = "hugo-hikari-theme"
 
 [permalinks]
@@ -40,6 +39,10 @@ theme = "hugo-hikari-theme"
 	[[params.offcanvas.socialnetworks]]
 		name = "Twitter"
 		url = "https://twitter.com/bojan_zivanovic"
+
+[services]
+	[services.googleAnalytics]
+		ID = "G-47S0XERS5G"
 
 [markup]
   [markup.highlight]
