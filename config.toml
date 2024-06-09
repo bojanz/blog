@@ -25,7 +25,7 @@ theme = "hugo-hikari-theme"
 [params.offcanvas]
 	# Menu items
 	title = "Bojan Živanović"
-	bio = "Open Sourcerer. eCommerce nerd. Engineer @[Platform.sh](https://platform.sh)"
+	bio = "Open Sourcerer. Director of Engineering @[Platform.sh](https://platform.sh)"
 	subscribe = "Subscribe"
 	followme = "Follow me on"
 
@@ -36,3 +36,8 @@ theme = "hugo-hikari-theme"
 	[[params.offcanvas.socialnetworks]]
 		name = "Twitter"
 		url = "//twitter.com/bojan_zivanovic"
+
+[markup]
+  [markup.highlight]
+    noClasses = false
+	codeFences = false

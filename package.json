@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@shikijs/rehype": "^1.6.3",
+    "rehype-cli": "^12.0.0"
+  }
+}

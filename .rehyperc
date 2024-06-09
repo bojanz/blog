@@ -1,0 +1,5 @@
+{
+  "plugins": [
+    ["@shikijs/rehype", {"theme": "light-plus"}]
+  ]
+}
