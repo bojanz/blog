@@ -40,10 +40,6 @@ theme = "hugo-hikari-theme"
 		name = "Twitter"
 		url = "https://twitter.com/bojan_zivanovic"
 
-[services]
-	[services.googleAnalytics]
-		ID = "G-47S0XERS5G"
-
 [markup]
   [markup.highlight]
     noClasses = false
