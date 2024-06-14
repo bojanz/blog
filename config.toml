@@ -42,5 +42,4 @@ theme = "hugo-hikari-theme"
 
 [markup]
   [markup.highlight]
-    noClasses = false
 	codeFences = false
